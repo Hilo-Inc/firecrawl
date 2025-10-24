@@ -1,9 +1,8 @@
 name: firecrawl
 
 x-common-service: &common-service
-  # NOTE: If you don't want to build the service locally,
-  # uncomment the build: statement and comment out the image: statement
-  # image: ghcr.io/firecrawl/firecrawl
+  # NOTE: Building locally to include stock scraping code
+  # image: ghcr.io/firecrawl/firecrawl:latest
   build: apps/api
 
   ulimits:
@@ -50,10 +49,9 @@ x-common-env: &common-env
 
 services:
   playwright-service:
-    # NOTE: If you don't want to build the service locally,
-    # uncomment the build: statement and comment out the image: statement
-    # image: ghcr.io/firecrawl/playwright-service:latest
-    build: apps/playwright-service-ts
+    # NOTE: Can use pre-built image for playwright
+    image: ghcr.io/firecrawl/playwright-service:latest
+    # build: apps/playwright-service-ts
     environment:
       PORT: 3000
       PROXY_SERVER: ${PROXY_SERVER}
@@ -93,7 +91,12 @@ services:
     command: redis-server --bind 0.0.0.0
   
   nuq-postgres:
-    build: apps/nuq-postgres
+    # Using pre-built image to avoid build issues
+    image: postgres:15-alpine
+    # build: apps/nuq-postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./apps/nuq-postgres/nuq.sql:/docker-entrypoint-initdb.d/nuq.sql
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -102,6 +105,10 @@ services:
       - backend
     ports:
       - "5432:5432"
+
+volumes:
+  postgres-data:
+    driver: local
 
 networks:
   backend:

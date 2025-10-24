@@ -4,7 +4,12 @@
       "Bash(pnpm harness jest:*)",
       "Bash(pnpm install)",
       "Bash(npx tsc:*)",
-      "Bash(docker-compose config:*)"
+      "Bash(docker-compose config:*)",
+      "Bash(test:*)",
+      "Bash(docker compose:*)",
+      "Bash(cat:*)",
+      "Bash(git fetch:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []
