@@ -7,6 +7,10 @@ dump.rdb
 /mongo-data
 apps/js-sdk/node_modules/
 
+# Stock scraper output files
+/stock-output/*.md
+!/stock-output/.gitkeep
+
 apps/api/.env.local
 
 apps/test-suite/node_modules/

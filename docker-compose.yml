@@ -1,0 +1,146 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: firecrawl-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./apps/nuq-postgres/nuq.sql:/docker-entrypoint-initdb.d/nuq.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - firecrawl-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: firecrawl-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - firecrawl-network
+
+  # Playwright Service (optional - for browser automation)
+  playwright-service:
+    build:
+      context: ./apps/playwright-service-ts
+      dockerfile: Dockerfile
+    container_name: firecrawl-playwright
+    environment:
+      - PORT=3000
+      - BLOCK_MEDIA=${BLOCK_MEDIA:-false}
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - firecrawl-network
+
+  # Firecrawl API (with integrated stock scraping)
+  firecrawl-api:
+    build:
+      context: .
+      dockerfile: ./apps/api/Dockerfile
+    container_name: firecrawl-api
+    ports:
+      - "${PORT:-3002}:3002"
+    environment:
+      # Server Configuration
+      - PORT=3002
+      - HOST=0.0.0.0
+      - ENV=${ENV:-production}
+      - LOGGING_LEVEL=${LOGGING_LEVEL:-info}
+
+      # Database
+      - USE_DB_AUTHENTICATION=${USE_DB_AUTHENTICATION:-false}
+      - NUQ_DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-postgres}
+
+      # Redis
+      - REDIS_URL=redis://redis:6379
+      - REDIS_RATE_LIMIT_URL=redis://redis:6379
+
+      # Workers
+      - NUM_WORKERS_PER_QUEUE=${NUM_WORKERS_PER_QUEUE:-8}
+
+      # Playwright Service
+      - PLAYWRIGHT_MICROSERVICE_URL=http://playwright-service:3000/scrape
+      - BLOCK_MEDIA=${BLOCK_MEDIA:-false}
+
+      # Stock Scraper Configuration
+      - INVESTING_COM_SEARCH_MODE=${INVESTING_COM_SEARCH_MODE:-investingcom-api}
+      - STOCK_SCRAPER_OUTPUT_DIR=/app/stock-output
+
+      # Optional: AI Features (for stock data extraction)
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-}
+      - MODEL_NAME=${MODEL_NAME:-gpt-4o-mini}
+      - MODEL_EMBEDDING_NAME=${MODEL_EMBEDDING_NAME:-text-embedding-3-small}
+
+      # Optional: Ollama (local AI alternative)
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-}
+
+      # Optional: Search APIs
+      - SERPER_API_KEY=${SERPER_API_KEY:-}
+      - SEARCHAPI_API_KEY=${SEARCHAPI_API_KEY:-}
+
+      # Optional: Monitoring & Notifications
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL:-}
+      - POSTHOG_API_KEY=${POSTHOG_API_KEY:-}
+      - POSTHOG_HOST=${POSTHOG_HOST:-}
+
+      # Security
+      - BULL_AUTH_KEY=${BULL_AUTH_KEY:-firecrawl-local-dev}
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      playwright-service:
+        condition: service_healthy
+    volumes:
+      - ./stock-output:/app/stock-output
+      - firecrawl-logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - firecrawl-network
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+  firecrawl-logs:
+    driver: local
+
+networks:
+  firecrawl-network:
+    driver: bridge

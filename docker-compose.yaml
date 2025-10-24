@@ -24,8 +24,8 @@ x-common-env: &common-env
   OPENAI_API_KEY: ${OPENAI_API_KEY}
   OPENAI_BASE_URL: ${OPENAI_BASE_URL}
   MODEL_NAME: ${MODEL_NAME}
-  MODEL_EMBEDDING_NAME: ${MODEL_EMBEDDING_NAME} 
-  OLLAMA_BASE_URL: ${OLLAMA_BASE_URL} 
+  MODEL_EMBEDDING_NAME: ${MODEL_EMBEDDING_NAME}
+  OLLAMA_BASE_URL: ${OLLAMA_BASE_URL}
   SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
   BULL_AUTH_KEY: ${BULL_AUTH_KEY}
   TEST_API_KEY: ${TEST_API_KEY}
@@ -44,6 +44,9 @@ x-common-env: &common-env
   SEARXNG_ENDPOINT: ${SEARXNG_ENDPOINT}
   SEARXNG_ENGINES: ${SEARXNG_ENGINES}
   SEARXNG_CATEGORIES: ${SEARXNG_CATEGORIES}
+  # Stock Scraper Configuration
+  INVESTING_COM_SEARCH_MODE: ${INVESTING_COM_SEARCH_MODE:-investingcom-api}
+  STOCK_SCRAPER_OUTPUT_DIR: ${STOCK_SCRAPER_OUTPUT_DIR:-/app/stock-output}
 
 services:
   playwright-service:
@@ -74,6 +77,8 @@ services:
       - playwright-service
     ports:
       - "${PORT:-3002}:${INTERNAL_PORT:-3002}"
+    volumes:
+      - ./stock-output:/app/stock-output
     command: node dist/src/harness.js --start-docker
 
   redis:

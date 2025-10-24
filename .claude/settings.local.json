@@ -3,7 +3,8 @@
     "allow": [
       "Bash(pnpm harness jest:*)",
       "Bash(pnpm install)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(docker-compose config:*)"
     ],
     "deny": [],
     "ask": []
