@@ -21,7 +21,7 @@ x-common-env: &common-env
   NUQ_DATABASE_URL: postgres://postgres:postgres@nuq-postgres:5432/postgres
   USE_DB_AUTHENTICATION: ${USE_DB_AUTHENTICATION}
   OPENAI_API_KEY: ${OPENAI_API_KEY}
-  OPENAI_BASE_URL: ${OPENAI_BASE_URL}
+  # OPENAI_BASE_URL: Only set if using custom endpoint (Ollama, etc)
   MODEL_NAME: ${MODEL_NAME}
   MODEL_EMBEDDING_NAME: ${MODEL_EMBEDDING_NAME}
   OLLAMA_BASE_URL: ${OLLAMA_BASE_URL}
