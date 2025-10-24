@@ -24,6 +24,7 @@ import { deepResearchController } from "../controllers/v1/deep-research";
 import { deepResearchStatusController } from "../controllers/v1/deep-research-status";
 import { tokenUsageController } from "../controllers/v1/token-usage";
 import { ongoingCrawlsController } from "../controllers/v1/crawl-ongoing";
+import { scrapeStockController } from "../controllers/v1/scrape-stock";
 import {
   authMiddleware,
   checkCreditsMiddleware,
@@ -147,6 +148,15 @@ v1Router.post(
   countryCheck,
   checkCreditsMiddleware(),
   wrap(searchController),
+);
+
+v1Router.post(
+  "/scrape-stock",
+  authMiddleware(RateLimiterMode.Scrape),
+  countryCheck,
+  checkCreditsMiddleware(),
+  blocklistMiddleware,
+  wrap(scrapeStockController),
 );
 
 v1Router.post(

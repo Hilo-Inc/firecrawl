@@ -1507,6 +1507,60 @@ export type SearchResponse =
       data: Document[];
     };
 
+// Stock scraping types
+export const scrapeStockRequestSchema = z
+  .object({
+    tickers: z
+      .array(z.string().min(1).max(10))
+      .min(1)
+      .max(50)
+      .transform(arr => arr.map(t => t.toUpperCase())),
+    searchMode: z
+      .enum(["investingcom-api", "firecrawl-search"])
+      .optional(),
+    options: z
+      .object({
+        markdown: z.boolean().default(true),
+        extract: z.boolean().default(false),
+        saveMarkdown: z.boolean().default(false),
+        schema: z.any().optional(),
+      })
+      .strict(strictMessage)
+      .default({}),
+    timeout: z.number().int().positive().finite().safe().default(60000),
+    origin: z.string().optional().default("api"),
+    integration: integrationSchema.optional().transform(val => val || null),
+  })
+  .strict(strictMessage);
+
+export type ScrapeStockRequest = z.infer<typeof scrapeStockRequestSchema>;
+
+export interface StockScrapeResult {
+  ticker: string;
+  success: boolean;
+  data?: {
+    url: string;
+    exchange: string;
+    symbol: string;
+    markdown?: string;
+    markdownFile?: string;
+    extract?: any;
+  };
+  error?: string;
+}
+
+export type ScrapeStockResponse =
+  | ErrorResponse
+  | {
+      success: true;
+      summary: {
+        total: number;
+        successful: number;
+        failed: number;
+      };
+      results: StockScrapeResult[];
+    };
+
 export type TokenUsage = {
   promptTokens: number;
   completionTokens: number;

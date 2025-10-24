@@ -1,0 +1,138 @@
+{
+  "info": {
+    "name": "Stock Scraper API",
+    "description": "Test collection for Stock Scraper API - Firecrawl wrapper for Investing.com",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3003/health",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3003",
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "Single Ticker - Markdown Only",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tickers\": [\"BYND\"],\n  \"options\": {\n    \"markdown\": true,\n    \"extract\": false,\n    \"saveMarkdown\": true\n  }\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3003/scrape-stocks",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3003",
+          "path": ["scrape-stocks"]
+        }
+      }
+    },
+    {
+      "name": "Single Ticker - AI Extraction Only",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tickers\": [\"BYND\"],\n  \"options\": {\n    \"markdown\": false,\n    \"extract\": true,\n    \"saveMarkdown\": false\n  }\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3003/scrape-stocks",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3003",
+          "path": ["scrape-stocks"]
+        }
+      }
+    },
+    {
+      "name": "Single Ticker - Both Formats",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tickers\": [\"BYND\"],\n  \"options\": {\n    \"markdown\": true,\n    \"extract\": true,\n    \"saveMarkdown\": true\n  }\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3003/scrape-stocks",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3003",
+          "path": ["scrape-stocks"]
+        }
+      }
+    },
+    {
+      "name": "Multiple Tickers",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tickers\": [\"BYND\", \"AAPL\", \"TSLA\"],\n  \"options\": {\n    \"markdown\": true,\n    \"extract\": true,\n    \"saveMarkdown\": true\n  }\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3003/scrape-stocks",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3003",
+          "path": ["scrape-stocks"]
+        }
+      }
+    },
+    {
+      "name": "Custom Schema",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tickers\": [\"AAPL\"],\n  \"options\": {\n    \"markdown\": false,\n    \"extract\": true,\n    \"schema\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"companyName\": { \"type\": \"string\" },\n        \"price\": { \"type\": \"number\" },\n        \"currency\": { \"type\": \"string\" },\n        \"marketCap\": { \"type\": \"string\" },\n        \"peRatio\": { \"type\": \"number\" }\n      }\n    }\n  }\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3003/scrape-stocks",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3003",
+          "path": ["scrape-stocks"]
+        }
+      }
+    }
+  ]
+}
